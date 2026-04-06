@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.zip
+benchmarks/results/*.json
+__pycache__/
+.env

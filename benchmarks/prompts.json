@@ -1,0 +1,52 @@
+[
+  {
+    "id": "react-rerender",
+    "category": "デバッグ",
+    "prompt": "なぜReactコンポーネントが毎回再レンダリングされるのか説明して"
+  },
+  {
+    "id": "auth-middleware",
+    "category": "バグ修正",
+    "prompt": "認証ミドルウェアのトークン有効期限チェックにバグがある。修正して"
+  },
+  {
+    "id": "postgres-pool",
+    "category": "セットアップ",
+    "prompt": "Node.jsでPostgreSQLのコネクションプーリングをセットアップする方法を教えて"
+  },
+  {
+    "id": "git-rebase-merge",
+    "category": "解説",
+    "prompt": "git rebaseとmergeの違いを説明して"
+  },
+  {
+    "id": "callback-async",
+    "category": "リファクタリング",
+    "prompt": "コールバック地獄をasync/awaitにリファクタリングして"
+  },
+  {
+    "id": "microservices",
+    "category": "アーキテクチャ",
+    "prompt": "マイクロサービスとモノリスの比較を説明して"
+  },
+  {
+    "id": "security-review",
+    "category": "コードレビュー",
+    "prompt": "ExpressルートのPRをセキュリティ観点でレビューして"
+  },
+  {
+    "id": "docker-multistage",
+    "category": "DevOps",
+    "prompt": "Dockerのマルチステージビルドを設定して"
+  },
+  {
+    "id": "postgres-race",
+    "category": "デバッグ",
+    "prompt": "PostgreSQLのレースコンディションをデバッグして"
+  },
+  {
+    "id": "react-error-boundary",
+    "category": "実装",
+    "prompt": "ReactのError Boundaryを実装して"
+  }
+]
