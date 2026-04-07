@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 genshijin ベンチマーク
-通常応答 vs 原始人モード応答のトークン使用量を比較する。
+通常応答 vs caveman vs genshijin モード応答のトークン使用量を比較する。
 
 使い方:
   pip install -r requirements.txt
@@ -21,14 +21,16 @@ from anthropic import Anthropic
 SCRIPT_DIR = Path(__file__).parent
 PROMPTS_FILE = SCRIPT_DIR / "prompts.json"
 SKILL_FILE = SCRIPT_DIR.parent / "skills" / "genshijin" / "SKILL.md"
+CAVEMAN_SKILL_FILE = SCRIPT_DIR / "caveman_skill.md"
 RESULTS_DIR = SCRIPT_DIR / "results"
 README_FILE = SCRIPT_DIR.parent / "README.md"
 
 NORMAL_SYSTEM = "あなたは親切で丁寧なソフトウェアエンジニアリングアシスタントです。日本語で回答してください。"
+CAVEMAN_SUFFIX = "\n\n日本語で回答してください。"
 
 
-def load_skill() -> str:
-    text = SKILL_FILE.read_text(encoding="utf-8")
+def load_skill(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
     # frontmatter を除去
     if text.startswith("---"):
         end = text.index("---", 3)
@@ -42,7 +44,8 @@ def run_benchmark(
     prompts: list[dict],
     trials: int,
 ) -> list[dict]:
-    skill_text = load_skill()
+    genshijin_text = load_skill(SKILL_FILE)
+    caveman_text = load_skill(CAVEMAN_SKILL_FILE) + CAVEMAN_SUFFIX
     results = []
 
     for prompt_data in prompts:
@@ -52,6 +55,10 @@ def run_benchmark(
 
         normal_tokens = []
         caveman_tokens = []
+        genshijin_tokens = []
+        normal_texts = []
+        caveman_texts = []
+        genshijin_texts = []
 
         for trial in range(trials):
             print(
@@ -69,22 +76,39 @@ def run_benchmark(
             )
             n_tokens = resp_normal.usage.output_tokens
             normal_tokens.append(n_tokens)
+            normal_texts.append(resp_normal.content[0].text)
 
-            # 原始人応答
+            # caveman応答
             resp_caveman = client.messages.create(
                 model=model,
                 max_tokens=4096,
-                system=skill_text,
+                system=caveman_text,
                 messages=[{"role": "user", "content": prompt}],
             )
-            c_tokens = resp_caveman.usage.output_tokens
-            caveman_tokens.append(c_tokens)
+            cv_tokens = resp_caveman.usage.output_tokens
+            caveman_tokens.append(cv_tokens)
+            caveman_texts.append(resp_caveman.content[0].text)
 
-            print(f"通常={n_tokens} 原始人={c_tokens}")
+            # genshijin応答
+            resp_genshijin = client.messages.create(
+                model=model,
+                max_tokens=4096,
+                system=genshijin_text,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            g_tokens = resp_genshijin.usage.output_tokens
+            genshijin_tokens.append(g_tokens)
+            genshijin_texts.append(resp_genshijin.content[0].text)
+
+            print(f"通常={n_tokens} caveman={cv_tokens} genshijin={g_tokens}")
 
         median_normal = int(statistics.median(normal_tokens))
         median_caveman = int(statistics.median(caveman_tokens))
-        saved_pct = round((1 - median_caveman / median_normal) * 100)
+        median_genshijin = int(statistics.median(genshijin_tokens))
+        saved_caveman_pct = round((1 - median_caveman / median_normal) * 100)
+        saved_genshijin_pct = round((1 - median_genshijin / median_normal) * 100)
+        # genshijin vs caveman の改善率
+        vs_caveman_pct = round((1 - median_genshijin / median_caveman) * 100) if median_caveman > 0 else 0
 
         results.append(
             {
@@ -93,9 +117,16 @@ def run_benchmark(
                 "prompt": prompt,
                 "normal_tokens": normal_tokens,
                 "caveman_tokens": caveman_tokens,
+                "genshijin_tokens": genshijin_tokens,
+                "normal_texts": normal_texts,
+                "caveman_texts": caveman_texts,
+                "genshijin_texts": genshijin_texts,
                 "median_normal": median_normal,
                 "median_caveman": median_caveman,
-                "saved_pct": saved_pct,
+                "median_genshijin": median_genshijin,
+                "saved_caveman_pct": saved_caveman_pct,
+                "saved_genshijin_pct": saved_genshijin_pct,
+                "vs_caveman_pct": vs_caveman_pct,
             }
         )
 
@@ -104,23 +135,34 @@ def run_benchmark(
 
 def print_table(results: list[dict]) -> str:
     lines = [
-        "| タスク | 通常 | 原始人 | 削減率 |",
-        "|--------|------|--------|--------|",
+        "| タスク | 通常 | caveman | genshijin | caveman削減 | genshijin削減 | genshijin vs caveman |",
+        "|--------|------|---------|-----------|------------|-------------|---------------------|",
     ]
     total_normal = 0
     total_caveman = 0
+    total_genshijin = 0
 
     for r in results:
         lines.append(
-            f"| {r['prompt'][:30]} | {r['median_normal']} | {r['median_caveman']} | {r['saved_pct']}% |"
+            f"| {r['prompt'][:30]} | {r['median_normal']} | {r['median_caveman']} "
+            f"| {r['median_genshijin']} | {r['saved_caveman_pct']}% "
+            f"| {r['saved_genshijin_pct']}% | {r['vs_caveman_pct']}% |"
         )
         total_normal += r["median_normal"]
         total_caveman += r["median_caveman"]
+        total_genshijin += r["median_genshijin"]
 
-    avg_saved = round((1 - total_caveman / total_normal) * 100)
     avg_normal = total_normal // len(results)
     avg_caveman = total_caveman // len(results)
-    lines.append(f"| **平均** | **{avg_normal}** | **{avg_caveman}** | **{avg_saved}%** |")
+    avg_genshijin = total_genshijin // len(results)
+    avg_saved_cv = round((1 - total_caveman / total_normal) * 100)
+    avg_saved_gs = round((1 - total_genshijin / total_normal) * 100)
+    avg_vs = round((1 - total_genshijin / total_caveman) * 100) if total_caveman > 0 else 0
+    lines.append(
+        f"| **平均** | **{avg_normal}** | **{avg_caveman}** "
+        f"| **{avg_genshijin}** | **{avg_saved_cv}%** "
+        f"| **{avg_saved_gs}%** | **{avg_vs}%** |"
+    )
 
     table = "\n".join(lines)
     print("\n" + table)
