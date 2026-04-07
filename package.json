@@ -1,0 +1,7 @@
+{
+  "name": "genshijin",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve docs"
+  }
+}

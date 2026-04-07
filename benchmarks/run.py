@@ -24,6 +24,7 @@ SKILL_FILE = SCRIPT_DIR.parent / "skills" / "genshijin" / "SKILL.md"
 CAVEMAN_SKILL_FILE = SCRIPT_DIR / "caveman_skill.md"
 RESULTS_DIR = SCRIPT_DIR / "results"
 README_FILE = SCRIPT_DIR.parent / "README.md"
+DOCS_BENCHMARK_FILE = SCRIPT_DIR.parent / "docs" / "benchmark.json"
 
 NORMAL_SYSTEM = "あなたは親切で丁寧なソフトウェアエンジニアリングアシスタントです。日本語で回答してください。"
 CAVEMAN_SUFFIX = "\n\n日本語で回答してください。"
@@ -198,6 +199,11 @@ def main():
         action="store_true",
         help="README.md のベンチマークテーブルを更新",
     )
+    parser.add_argument(
+        "--update-docs",
+        action="store_true",
+        help="docs/benchmark.json を更新（GitHub Pages用）",
+    )
     args = parser.parse_args()
 
     client = Anthropic()
@@ -232,6 +238,12 @@ def main():
 
     if args.update_readme:
         update_readme(table)
+
+    if args.update_docs:
+        import shutil
+        DOCS_BENCHMARK_FILE.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(result_file, DOCS_BENCHMARK_FILE)
+        print(f"docs/benchmark.json を更新しました。")
 
 
 if __name__ == "__main__":

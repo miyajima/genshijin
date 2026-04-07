@@ -153,56 +153,126 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* Before/After */
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
+    /* Examples */
+    .example {
+      margin-bottom: 40px;
     }
 
-    @media (max-width: 600px) {
-      .comparison { grid-template-columns: 1fr; }
+    .example-prompt {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px 10px 0 0;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .example-prompt::before {
+      content: '> ';
+      color: var(--text-muted);
+    }
+
+    .example-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+    }
+
+    @media (max-width: 768px) {
+      .example-cards { grid-template-columns: 1fr; }
       .stat-row { gap: 24px; }
       .hero h1 { font-size: 2rem; }
       .hero h1 span { font-size: 1.4rem; }
     }
 
-    .comparison-card {
+    .example-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
       padding: 16px 20px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      max-height: 280px;
+      overflow-y: auto;
     }
 
-    .comparison-card.before {
-      border-color: var(--red);
-      border-color: rgba(224, 96, 96, 0.3);
+    .example-card:first-child {
+      border-radius: 0 0 0 10px;
     }
 
-    .comparison-card.after {
-      border-color: var(--green);
-      border-color: rgba(126, 200, 126, 0.3);
+    .example-card:last-child {
+      border-radius: 0 0 10px 0;
     }
 
-    .comparison-card .tag {
+    @media (max-width: 768px) {
+      .example-card:first-child { border-radius: 0; }
+      .example-card:last-child { border-radius: 0 0 10px 10px; }
+    }
+
+    .example-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .example-card .card-label {
       font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
+      letter-spacing: 0.08em;
       font-weight: 600;
     }
 
-    .comparison-card.before .tag { color: var(--red); }
-    .comparison-card.after .tag { color: var(--green); }
+    .example-card.normal .card-label { color: var(--red); }
+    .example-card.caveman .card-label { color: #e0c060; }
+    .example-card.genshijin .card-label { color: var(--green); }
 
-    .comparison-card p {
-      font-size: 0.9rem;
+    .example-card .card-tokens {
+      font-family: 'SF Mono', monospace;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      line-height: 1.5;
     }
 
-    .comparison-card.after p {
+    .example-card p {
+      color: var(--text-muted);
+    }
+
+    .example-card.genshijin p {
+      color: var(--text);
+    }
+
+    .example-card code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      background: rgba(212, 165, 116, 0.15);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    .example-card pre {
+      background: #111;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin: 6px 0;
+      overflow-x: auto;
+    }
+
+    .example-card pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .example-card .card-body {
+      color: var(--text-muted);
+    }
+
+    .example-card.genshijin .card-body {
       color: var(--text);
     }
 
@@ -301,6 +371,39 @@
     tr:last-child td { border-bottom: none; }
     tr:last-child { background: var(--surface); font-weight: 600; }
 
+    /* Highlight genshijin & 削減率 columns */
+    th:nth-child(4), th:nth-child(5) {
+      color: var(--accent);
+    }
+
+    td:nth-child(4), td:nth-child(5) {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* JSON viewer */
+    .json-viewer {
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 600px;
+      overflow: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .json-viewer .json-key { color: #7ec87e; }
+    .json-viewer .json-string { color: #d4a574; }
+    .json-viewer .json-number { color: #7eb8e0; }
+    .json-viewer .json-bool { color: #e0c060; }
+    .json-viewer .json-null { color: #888; }
+    .json-viewer .json-bracket { color: #ccc; }
+    .json-viewer .json-comma { color: #888; }
+
     /* Footer */
     footer {
       text-align: center;
@@ -356,15 +459,36 @@
     </header>
 
     <section>
-      <h2>Before / After</h2>
-      <div class="comparison">
-        <div class="comparison-card before">
-          <div class="tag">Before (1,148 tokens)</div>
-          <p>ご質問ありがとうございます。お調べしたところ、こちらの問題につきましては、レンダリングが行われるたびに新しいオブジェクトの参照が生成されてしまうことが原因となっております。</p>
+      <h2>実際の圧縮結果</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.9rem;">同じプロンプト・同じモデル（Claude Sonnet）で生成。内容は同じ、トークンだけ違う。</p>
+
+      <!-- Example 1: CORS -->
+      <div class="example">
+        <div class="example-prompt">CORSエラーが出る。原因と解決策を教えて</div>
+        <div class="example-cards">
+          <div class="example-card normal" id="ex1-normal"></div>
+          <div class="example-card caveman" id="ex1-caveman"></div>
+          <div class="example-card genshijin" id="ex1-genshijin"></div>
         </div>
-        <div class="comparison-card after">
-          <div class="tag">After (274 tokens)</div>
-          <p>レンダリング毎に新オブジェクト参照が生成。インラインオブジェクトprop = 新しい参照 = 再レンダリング。<code>useMemo</code>で包む。</p>
+      </div>
+
+      <!-- Example 2: Event Loop -->
+      <div class="example">
+        <div class="example-prompt">Node.jsのイベントループの仕組みを説明して</div>
+        <div class="example-cards">
+          <div class="example-card normal" id="ex2-normal"></div>
+          <div class="example-card caveman" id="ex2-caveman"></div>
+          <div class="example-card genshijin" id="ex2-genshijin"></div>
+        </div>
+      </div>
+
+      <!-- Example 3: Auth Middleware -->
+      <div class="example">
+        <div class="example-prompt">認証ミドルウェアのトークン有効期限チェックにバグがある。修正して</div>
+        <div class="example-cards">
+          <div class="example-card normal" id="ex3-normal"></div>
+          <div class="example-card caveman" id="ex3-caveman"></div>
+          <div class="example-card genshijin" id="ex3-genshijin"></div>
         </div>
       </div>
     </section>
@@ -421,7 +545,7 @@
               <th></th>
               <th>通常</th>
               <th>caveman</th>
-              <th>genshijin</th>
+              <th>genshijin🗿</th>
               <th>削減率</th>
             </tr>
           </thead>
@@ -472,6 +596,12 @@
         </table>
       </div>
     </section>
+
+    <section>
+      <h2>ベンチマーク生データ (JSON)</h2>
+      <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">30タスク × 3回試行の全結果。モデル: claude-sonnet-4-20250514</p>
+      <div class="json-viewer" id="json-viewer">Loading...</div>
+    </section>
   </div>
 
   <footer>
@@ -493,6 +623,80 @@
         setTimeout(() => btn.textContent = 'Copy', 2000);
       });
     }
+
+    function syntaxHighlight(json) {
+      const str = JSON.stringify(json, null, 2);
+      return str.replace(
+        /("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+          let cls = 'json-number';
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = 'json-key';
+              return '<span class="' + cls + '">' + escapeHtml(match.slice(0, -1)) + '</span><span class="json-comma">:</span>';
+            } else {
+              cls = 'json-string';
+            }
+          } else if (/true|false/.test(match)) {
+            cls = 'json-bool';
+          } else if (/null/.test(match)) {
+            cls = 'json-null';
+          }
+          return '<span class="' + cls + '">' + escapeHtml(match) + '</span>';
+        }
+      );
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function mdToHtml(text) {
+      return text
+        // Code blocks
+        .replace(/```(\w*)\n([\s\S]*?)```/g, function(_, lang, code) {
+          return '<pre><code>' + escapeHtml(code.trim()) + '</code></pre>';
+        })
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Bold
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        // Headers
+        .replace(/^### (.+)$/gm, '<strong style="color:var(--text);display:block;margin:8px 0 4px">$1</strong>')
+        .replace(/^## (.+)$/gm, '<strong style="color:var(--text);font-size:1em;display:block;margin:10px 0 4px">$1</strong>')
+        // Line breaks
+        .replace(/\n/g, '<br>');
+    }
+
+    function renderExample(elId, label, tokens, text) {
+      const el = document.getElementById(elId);
+      el.innerHTML =
+        '<div class="card-header">' +
+          '<span class="card-label">' + escapeHtml(label) + '</span>' +
+          '<span class="card-tokens">' + tokens.toLocaleString() + ' tokens</span>' +
+        '</div>' +
+        '<div class="card-body">' + mdToHtml(text) + '</div>';
+    }
+
+    const exampleIds = ['cors-error', 'event-loop', 'auth-middleware'];
+    const exPrefixes = ['ex1', 'ex2', 'ex3'];
+
+    fetch('benchmark.json')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('json-viewer').innerHTML = syntaxHighlight(data);
+
+        exampleIds.forEach((id, i) => {
+          const item = data.results.find(r => r.id === id);
+          if (!item) return;
+          renderExample(exPrefixes[i] + '-normal', '通常', item.median_normal, item.normal_texts[1]);
+          renderExample(exPrefixes[i] + '-caveman', 'caveman', item.median_caveman, item.caveman_texts[1]);
+          renderExample(exPrefixes[i] + '-genshijin', 'genshijin', item.median_genshijin, item.genshijin_texts[1]);
+        });
+      })
+      .catch(() => {
+        document.getElementById('json-viewer').textContent = 'Failed to load benchmark data.';
+      });
   </script>
 </body>
 </html>
