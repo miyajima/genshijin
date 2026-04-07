@@ -4,3 +4,4 @@ node_modules/
 benchmarks/results/*.json
 __pycache__/
 .env
+.playwright-mcp/
