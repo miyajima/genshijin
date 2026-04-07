@@ -2,8 +2,8 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "genshijin",
   "owner": {
-    "name": "interfacex",
-    "url": "https://github.com/interfacex"
+    "name": "InterfaceX-co-jp",
+    "url": "https://github.com/InterfaceX-co-jp"
   },
   "plugins": [
     {

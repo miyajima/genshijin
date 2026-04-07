@@ -25,20 +25,14 @@ Claude Code / Codex 向けの超圧縮コミュニケーションスキル。[ca
 Claude Code 内で以下を実行:
 
 ```
-/plugin install genshijin@interfacex/genshijin
-```
-
-または、マーケットプレイスを追加してからインストール:
-
-```
-/plugin marketplace add interfacex/genshijin
-/plugin install genshijin
+/plugin install genshijin@InterfaceX-co-jp/genshijin
+claude plugin marketplace add InterfaceX-co-jp/genshijin
 ```
 
 ### 方法2: npx skills（サードパーティ）
 
 ```bash
-npx skills add interfacex/genshijin
+npx skills add InterfaceX-co-jp/genshijin
 ```
 
 ### 方法3: 手動インストール
@@ -49,7 +43,7 @@ npx skills add interfacex/genshijin
 # リポジトリのルートで実行
 mkdir -p .claude/skills/genshijin
 curl -o .claude/skills/genshijin/SKILL.md \
-  https://raw.githubusercontent.com/interfacex/genshijin/main/skills/genshijin/SKILL.md
+  https://raw.githubusercontent.com/InterfaceX-co-jp/genshijin/main/skills/genshijin/SKILL.md
 ```
 
 **グローバル**（すべてのプロジェクトに適用）:
@@ -57,7 +51,7 @@ curl -o .claude/skills/genshijin/SKILL.md \
 ```bash
 mkdir -p ~/.claude/skills/genshijin
 curl -o ~/.claude/skills/genshijin/SKILL.md \
-  https://raw.githubusercontent.com/interfacex/genshijin/main/skills/genshijin/SKILL.md
+  https://raw.githubusercontent.com/InterfaceX-co-jp/genshijin/main/skills/genshijin/SKILL.md
 ```
 
 ### 方法4: 一時的に使う
