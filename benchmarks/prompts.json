@@ -48,5 +48,105 @@
     "id": "react-error-boundary",
     "category": "実装",
     "prompt": "ReactのError Boundaryを実装して"
+  },
+  {
+    "id": "cors-error",
+    "category": "デバッグ",
+    "prompt": "CORSエラーが出る。原因と解決策を教えて"
+  },
+  {
+    "id": "nginx-reverse-proxy",
+    "category": "セットアップ",
+    "prompt": "Nginxのリバースプロキシ設定を教えて"
+  },
+  {
+    "id": "redis-cache",
+    "category": "実装",
+    "prompt": "Redisを使ったキャッシュ戦略を教えて"
+  },
+  {
+    "id": "typescript-generics",
+    "category": "解説",
+    "prompt": "TypeScriptのジェネリクスを初心者向けに説明して"
+  },
+  {
+    "id": "rest-graphql",
+    "category": "アーキテクチャ",
+    "prompt": "REST APIとGraphQLの違いを説明して"
+  },
+  {
+    "id": "memory-leak",
+    "category": "デバッグ",
+    "prompt": "Node.jsアプリのメモリリークを調査する方法を教えて"
+  },
+  {
+    "id": "github-actions-ci",
+    "category": "DevOps",
+    "prompt": "GitHub Actionsで基本的なCI/CDパイプラインを構築して"
+  },
+  {
+    "id": "sql-n-plus-one",
+    "category": "パフォーマンス",
+    "prompt": "N+1クエリ問題とは何か、どう解決するか教えて"
+  },
+  {
+    "id": "websocket-vs-sse",
+    "category": "アーキテクチャ",
+    "prompt": "WebSocketとServer-Sent Eventsの使い分けを教えて"
+  },
+  {
+    "id": "react-state-management",
+    "category": "解説",
+    "prompt": "Reactの状態管理ライブラリの選び方を教えて"
+  },
+  {
+    "id": "kubernetes-basics",
+    "category": "DevOps",
+    "prompt": "Kubernetesの基本概念を説明して"
+  },
+  {
+    "id": "oauth2-flow",
+    "category": "解説",
+    "prompt": "OAuth2の認証フローを説明して"
+  },
+  {
+    "id": "css-flexbox-grid",
+    "category": "解説",
+    "prompt": "CSS FlexboxとGridの使い分けを教えて"
+  },
+  {
+    "id": "python-decorator",
+    "category": "解説",
+    "prompt": "Pythonのデコレータの仕組みを説明して"
+  },
+  {
+    "id": "db-index",
+    "category": "パフォーマンス",
+    "prompt": "データベースインデックスの仕組みと使いどころを教えて"
+  },
+  {
+    "id": "jwt-session",
+    "category": "アーキテクチャ",
+    "prompt": "JWTとセッションベース認証の比較を教えて"
+  },
+  {
+    "id": "promise-all-race",
+    "category": "解説",
+    "prompt": "Promise.allとPromise.raceの違いと使い分けを教えて"
+  },
+  {
+    "id": "terraform-basics",
+    "category": "DevOps",
+    "prompt": "TerraformでAWSインフラを管理する基本を教えて"
+  },
+  {
+    "id": "event-loop",
+    "category": "解説",
+    "prompt": "Node.jsのイベントループの仕組みを説明して"
+  },
+  {
+    "id": "api-rate-limiting",
+    "category": "実装",
+    "prompt": "APIのレート制限を実装する方法を教えて"
   }
 ]
