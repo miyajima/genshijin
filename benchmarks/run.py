@@ -25,7 +25,7 @@ SKILL_FILE = SCRIPT_DIR.parent / "skills" / "genshijin" / "SKILL.md"
 CAVEMAN_SKILL_FILE = SCRIPT_DIR / "caveman_skill.md"
 RESULTS_DIR = SCRIPT_DIR / "results"
 README_FILE = SCRIPT_DIR.parent / "README.md"
-DOCS_BENCHMARK_FILE = SCRIPT_DIR.parent / "docs" / "benchmark.json"
+DOCS_DIR = SCRIPT_DIR.parent / "docs"
 
 NORMAL_SYSTEM_JA = "あなたは親切で丁寧なソフトウェアエンジニアリングアシスタントです。日本語で回答してください。"
 NORMAL_SYSTEM_EN = "You are a helpful and thorough software engineering assistant. Respond in English."
@@ -272,9 +272,10 @@ def main():
 
     if args.update_docs:
         import shutil
-        DOCS_BENCHMARK_FILE.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(result_file, DOCS_BENCHMARK_FILE)
-        print(f"docs/benchmark.json を更新しました。")
+        DOCS_DIR.mkdir(parents=True, exist_ok=True)
+        docs_file = DOCS_DIR / f"benchmark{'_en' if args.lang == 'en' else ''}.json"
+        shutil.copy2(result_file, docs_file)
+        print(f"{docs_file.name} を更新しました。")
 
 
 if __name__ == "__main__":
