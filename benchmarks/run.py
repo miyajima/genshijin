@@ -142,11 +142,21 @@ def run_benchmark(
     return results
 
 
-def print_table(results: list[dict]) -> str:
-    lines = [
-        "| タスク | 通常 | caveman | genshijin | caveman削減 | genshijin削減 | genshijin vs caveman |",
-        "|--------|------|---------|-----------|------------|-------------|---------------------|",
-    ]
+def print_table(results: list[dict], lang: str = "ja") -> str:
+    if lang == "en":
+        header = [
+            "| Task | Normal | caveman | genshijin | caveman saved | genshijin saved | genshijin vs caveman |",
+            "|------|--------|---------|-----------|--------------|----------------|---------------------|",
+        ]
+        avg_label = "**Average**"
+    else:
+        header = [
+            "| タスク | 通常 | caveman | genshijin | caveman削減 | genshijin削減 | genshijin vs caveman |",
+            "|--------|------|---------|-----------|------------|-------------|---------------------|",
+        ]
+        avg_label = "**平均**"
+
+    lines = list(header)
     total_normal = 0
     total_caveman = 0
     total_genshijin = 0
@@ -168,7 +178,7 @@ def print_table(results: list[dict]) -> str:
     avg_saved_gs = round((1 - total_genshijin / total_normal) * 100)
     avg_vs = round((1 - total_genshijin / total_caveman) * 100) if total_caveman > 0 else 0
     lines.append(
-        f"| **平均** | **{avg_normal}** | **{avg_caveman}** "
+        f"| {avg_label} | **{avg_normal}** | **{avg_caveman}** "
         f"| **{avg_genshijin}** | **{avg_saved_cv}%** "
         f"| **{avg_saved_gs}%** | **{avg_vs}%** |"
     )
@@ -178,13 +188,17 @@ def print_table(results: list[dict]) -> str:
     return table
 
 
-def update_readme(table: str) -> None:
+def update_readme(table: str, lang: str = "ja") -> None:
     readme = README_FILE.read_text(encoding="utf-8")
-    start_marker = "<!-- BENCHMARK_START -->"
-    end_marker = "<!-- BENCHMARK_END -->"
+    if lang == "en":
+        start_marker = "<!-- BENCHMARK_EN_START -->"
+        end_marker = "<!-- BENCHMARK_EN_END -->"
+    else:
+        start_marker = "<!-- BENCHMARK_START -->"
+        end_marker = "<!-- BENCHMARK_END -->"
 
     if start_marker not in readme:
-        print("README.md にベンチマークマーカーが見つかりません。スキップ。")
+        print(f"README.md にベンチマークマーカー ({start_marker}) が見つかりません。スキップ。")
         return
 
     before = readme[: readme.index(start_marker) + len(start_marker)]
@@ -231,7 +245,7 @@ def main():
     print()
 
     results = run_benchmark(client, args.model, prompts, args.trials, lang=args.lang)
-    table = print_table(results)
+    table = print_table(results, lang=args.lang)
 
     # 結果を保存
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -254,7 +268,7 @@ def main():
     print(f"\n結果を保存: {result_file}")
 
     if args.update_readme:
-        update_readme(table)
+        update_readme(table, lang=args.lang)
 
     if args.update_docs:
         import shutil

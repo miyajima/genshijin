@@ -15,6 +15,10 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip benchmark]')"
+    strategy:
+      max-parallel: 1
+      matrix:
+        lang: [ja, en]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,17 +31,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r benchmarks/requirements.txt
 
-      - name: Run benchmark
+      - name: Run benchmark (${{ matrix.lang }})
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           cd benchmarks
-          python run.py --trials 3 --update-readme --update-docs
+          python run.py --lang ${{ matrix.lang }} --trials 3 --update-readme --update-docs
 
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
           git add README.md docs/benchmark.json
-          git diff --staged --quiet || git commit -m "ベンチマーク結果を更新 [skip benchmark]"
+          git diff --staged --quiet || git commit -m "ベンチマーク結果を更新 (${{ matrix.lang }}) [skip benchmark]"
           git push

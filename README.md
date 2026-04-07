@@ -137,6 +137,14 @@ claude --plugin-dir ./path/to/genshijin
 | **平均** | **1483** | **476** | **296** | **68%** | **80%** | **38%** |
 <!-- BENCHMARK_END -->
 
+### English Benchmark (参考値)
+
+genshijin は日本語最適化スキルだが、英語プロンプトでも圧縮効果を発揮するか検証。caveman（英語ネイティブ）との比較。
+
+<!-- BENCHMARK_EN_START -->
+*英語ベンチマーク未実行。`python run.py --lang en --trials 3 --update-readme` で生成。*
+<!-- BENCHMARK_EN_END -->
+
 > ベンチマークは英語版 [caveman](https://github.com/JuliusBrussee/caveman) の結果を参考値として掲載。
 > 自分で計測するには:
 
@@ -144,7 +152,8 @@ claude --plugin-dir ./path/to/genshijin
 cd benchmarks
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...
-python run.py --trials 3 --update-readme
+python run.py --trials 3 --update-readme              # 日本語
+python run.py --lang en --trials 3 --update-readme     # 英語
 ```
 
 ## 安全機能
