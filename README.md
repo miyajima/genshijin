@@ -1,6 +1,6 @@
 # genshijin 原始人 🗿
 
-> なぜ多くのトークンを使う？少なくて済むのに。
+> なぜ多くトークン使う？少なくて済む🗿
 
 Claude Code / Codex 向けの超圧縮コミュニケーションスキル。[caveman](https://github.com/JuliusBrussee/caveman) の日本語版をベースに、日本語特有の冗長表現に最適化。
 
