@@ -13,10 +13,11 @@ import argparse
 import json
 import statistics
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from anthropic import Anthropic
+from anthropic import Anthropic, RateLimitError
 
 SCRIPT_DIR = Path(__file__).parent
 PROMPTS_FILE_JA = SCRIPT_DIR / "prompts.json"
@@ -39,6 +40,22 @@ def load_skill(path: Path) -> str:
         end = text.index("---", 3)
         text = text[end + 3 :].strip()
     return text
+
+
+API_CALL_INTERVAL = 3  # リクエスト間の待機秒数
+MAX_RETRIES = 5
+
+
+def api_call_with_retry(client, **kwargs):
+    """Rate limit対応のリトライ付きAPI呼び出し。"""
+    for attempt in range(MAX_RETRIES):
+        try:
+            return client.messages.create(**kwargs)
+        except RateLimitError:
+            wait = 2 ** attempt * 10  # 10, 20, 40, 80, 160秒
+            print(f"\n    Rate limit hit, waiting {wait}s...", end=" ", flush=True)
+            time.sleep(wait)
+    return client.messages.create(**kwargs)
 
 
 def run_benchmark(
@@ -77,7 +94,8 @@ def run_benchmark(
             )
 
             # 通常応答
-            resp_normal = client.messages.create(
+            resp_normal = api_call_with_retry(
+                client,
                 model=model,
                 max_tokens=4096,
                 system=normal_system,
@@ -87,8 +105,11 @@ def run_benchmark(
             normal_tokens.append(n_tokens)
             normal_texts.append(resp_normal.content[0].text)
 
+            time.sleep(API_CALL_INTERVAL)
+
             # caveman応答
-            resp_caveman = client.messages.create(
+            resp_caveman = api_call_with_retry(
+                client,
                 model=model,
                 max_tokens=4096,
                 system=caveman_text,
@@ -98,8 +119,11 @@ def run_benchmark(
             caveman_tokens.append(cv_tokens)
             caveman_texts.append(resp_caveman.content[0].text)
 
+            time.sleep(API_CALL_INTERVAL)
+
             # genshijin応答
-            resp_genshijin = client.messages.create(
+            resp_genshijin = api_call_with_retry(
+                client,
                 model=model,
                 max_tokens=4096,
                 system=genshijin_text,
