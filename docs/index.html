@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>genshijin - Claude Code Plugin</title>
+  <meta name="description" content="Claude Code向け超圧縮コミュニケーションスキル。トークン使用量を約75%削減しつつ、技術的正確性は100%維持。">
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --accent: #d4a574;
+      --accent-dim: #b8895a;
+      --green: #7ec87e;
+      --red: #e06060;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 0 60px;
+    }
+
+    .hero-icon {
+      font-size: 72px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 1.8rem;
+    }
+
+    .hero .tagline {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero .quote {
+      font-size: 1rem;
+      color: var(--accent);
+      font-style: italic;
+      margin-bottom: 32px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-bottom: 40px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Install */
+    .install-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .install-box .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .install-box code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.95rem;
+      color: var(--accent);
+      display: block;
+      user-select: all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--border);
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-dim);
+      color: var(--bg);
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 56px;
+    }
+
+    section h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Before/After */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 600px) {
+      .comparison { grid-template-columns: 1fr; }
+      .stat-row { gap: 24px; }
+      .hero h1 { font-size: 2rem; }
+      .hero h1 span { font-size: 1.4rem; }
+    }
+
+    .comparison-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+
+    .comparison-card.before {
+      border-color: var(--red);
+      border-color: rgba(224, 96, 96, 0.3);
+    }
+
+    .comparison-card.after {
+      border-color: var(--green);
+      border-color: rgba(126, 200, 126, 0.3);
+    }
+
+    .comparison-card .tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .comparison-card.before .tag { color: var(--red); }
+    .comparison-card.after .tag { color: var(--green); }
+
+    .comparison-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .comparison-card.after p {
+      color: var(--text);
+    }
+
+    /* Modes */
+    .modes {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mode {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .mode-name {
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+
+    .mode-name code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .mode-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .features { grid-template-columns: 1fr; }
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td { font-family: 'SF Mono', monospace; font-size: 0.8rem; }
+
+    tr:last-child td { border-bottom: none; }
+    tr:last-child { background: var(--surface); font-weight: 600; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="hero-icon">🗿</div>
+      <h1>genshijin <span>原始人</span></h1>
+      <p class="quote">なぜ多くトークン使う？少なくて済む🗿</p>
+      <p class="tagline">Claude Code 向け超圧縮コミュニケーションスキル。日本語に最適化されたトークン削減プラグイン。</p>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-value">~80%</div>
+          <div class="stat-label">トークン削減</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">技術的正確性</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">3段階</div>
+          <div class="stat-label">強度レベル</div>
+        </div>
+      </div>
+
+      <div class="install-box">
+        <div class="label">Install</div>
+        <code>claude plugin marketplace add InterfaceX-co-jp/genshijin</code>
+        <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+      </div>
+    </header>
+
+    <section>
+      <h2>Before / After</h2>
+      <div class="comparison">
+        <div class="comparison-card before">
+          <div class="tag">Before (1,148 tokens)</div>
+          <p>ご質問ありがとうございます。お調べしたところ、こちらの問題につきましては、レンダリングが行われるたびに新しいオブジェクトの参照が生成されてしまうことが原因となっております。</p>
+        </div>
+        <div class="comparison-card after">
+          <div class="tag">After (274 tokens)</div>
+          <p>レンダリング毎に新オブジェクト参照が生成。インラインオブジェクトprop = 新しい参照 = 再レンダリング。<code>useMemo</code>で包む。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3段階の強度</h2>
+      <div class="modes">
+        <div class="mode">
+          <div class="mode-name"><code>/genshijin 丁寧</code></div>
+          <div class="mode-desc">クッション言葉・ぼかし表現を削除。敬語は維持。ビジネス向き。</div>
+        </div>
+        <div class="mode">
+          <div class="mode-name"><code>/genshijin</code></div>
+          <div class="mode-desc">敬語を落とし体言止め。助詞も最小限。原始人の基本形。</div>
+        </div>
+        <div class="mode">
+          <div class="mode-name"><code>/genshijin 極限</code></div>
+          <div class="mode-desc">略語・矢印記法・一語回答。電報のような最大圧縮。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>日本語への最適化</h2>
+      <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+        英語版 <a href="https://github.com/JuliusBrussee/caveman" style="color: var(--accent);">caveman</a> をベースに、日本語特有の冗長表現に最適化。
+      </p>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-title">敬語・丁寧語の圧縮</div>
+          <div class="feature-desc">です/ます/ございます を削除し体言止めに変換</div>
+        </div>
+        <div class="feature">
+          <div class="feature-title">クッション言葉の除去</div>
+          <div class="feature-desc">えーと/まあ/基本的に/一応 を排除</div>
+        </div>
+        <div class="feature">
+          <div class="feature-title">前置き表現の削除</div>
+          <div class="feature-desc">「ご質問ありがとうございます…」を省略</div>
+        </div>
+        <div class="feature">
+          <div class="feature-title">安全モード</div>
+          <div class="feature-desc">セキュリティ警告時は自動的に丁寧な日本語に復帰</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>ベンチマーク（30タスク平均）</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>通常</th>
+              <th>caveman</th>
+              <th>genshijin</th>
+              <th>削減率</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>React再レンダリング説明</td>
+              <td>1,148</td>
+              <td>396</td>
+              <td>274</td>
+              <td>76%</td>
+            </tr>
+            <tr>
+              <td>認証バグ修正</td>
+              <td>1,766</td>
+              <td>202</td>
+              <td>80</td>
+              <td>95%</td>
+            </tr>
+            <tr>
+              <td>Error Boundary実装</td>
+              <td>2,851</td>
+              <td>508</td>
+              <td>254</td>
+              <td>91%</td>
+            </tr>
+            <tr>
+              <td>Docker マルチステージ</td>
+              <td>1,547</td>
+              <td>449</td>
+              <td>180</td>
+              <td>88%</td>
+            </tr>
+            <tr>
+              <td>セキュリティレビュー</td>
+              <td>1,087</td>
+              <td>281</td>
+              <td>130</td>
+              <td>88%</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">30タスク平均</td>
+              <td>1,483</td>
+              <td>476</td>
+              <td>296</td>
+              <td>80%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/InterfaceX-co-jp/genshijin">GitHub</a>
+        <a href="https://github.com/JuliusBrussee/caveman">Original: caveman</a>
+        <a href="https://github.com/InterfaceX-co-jp">InterfaceX</a>
+      </div>
+      <p>MIT License</p>
+    </div>
+  </footer>
+
+  <script>
+    function copyInstall(btn) {
+      const code = btn.previousElementSibling.textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+  </script>
+</body>
+</html>
