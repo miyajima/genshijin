@@ -1,0 +1,152 @@
+[
+  {
+    "id": "react-rerender",
+    "category": "Debug",
+    "prompt": "Why does my React component re-render every time?"
+  },
+  {
+    "id": "auth-middleware",
+    "category": "Bug Fix",
+    "prompt": "There's a bug in the auth middleware token expiry check. Fix it"
+  },
+  {
+    "id": "postgres-pool",
+    "category": "Setup",
+    "prompt": "How do I set up PostgreSQL connection pooling in Node.js?"
+  },
+  {
+    "id": "git-rebase-merge",
+    "category": "Explanation",
+    "prompt": "Explain the difference between git rebase and merge"
+  },
+  {
+    "id": "callback-async",
+    "category": "Refactoring",
+    "prompt": "Refactor callback hell to async/await"
+  },
+  {
+    "id": "microservices",
+    "category": "Architecture",
+    "prompt": "Compare microservices vs monolith architecture"
+  },
+  {
+    "id": "security-review",
+    "category": "Code Review",
+    "prompt": "Review this Express route PR from a security perspective"
+  },
+  {
+    "id": "docker-multistage",
+    "category": "DevOps",
+    "prompt": "Set up Docker multi-stage builds"
+  },
+  {
+    "id": "postgres-race",
+    "category": "Debug",
+    "prompt": "Debug a race condition in PostgreSQL"
+  },
+  {
+    "id": "react-error-boundary",
+    "category": "Implementation",
+    "prompt": "Implement a React Error Boundary"
+  },
+  {
+    "id": "cors-error",
+    "category": "Debug",
+    "prompt": "I'm getting CORS errors. What's the cause and how to fix?"
+  },
+  {
+    "id": "nginx-reverse-proxy",
+    "category": "Setup",
+    "prompt": "Show me how to configure Nginx as a reverse proxy"
+  },
+  {
+    "id": "redis-cache",
+    "category": "Implementation",
+    "prompt": "What's a good Redis caching strategy?"
+  },
+  {
+    "id": "typescript-generics",
+    "category": "Explanation",
+    "prompt": "Explain TypeScript generics for beginners"
+  },
+  {
+    "id": "rest-graphql",
+    "category": "Architecture",
+    "prompt": "Explain the difference between REST API and GraphQL"
+  },
+  {
+    "id": "memory-leak",
+    "category": "Debug",
+    "prompt": "How do I investigate memory leaks in a Node.js app?"
+  },
+  {
+    "id": "github-actions-ci",
+    "category": "DevOps",
+    "prompt": "Build a basic CI/CD pipeline with GitHub Actions"
+  },
+  {
+    "id": "sql-n-plus-one",
+    "category": "Performance",
+    "prompt": "What is the N+1 query problem and how to solve it?"
+  },
+  {
+    "id": "websocket-vs-sse",
+    "category": "Architecture",
+    "prompt": "When should I use WebSocket vs Server-Sent Events?"
+  },
+  {
+    "id": "react-state-management",
+    "category": "Explanation",
+    "prompt": "How do I choose a React state management library?"
+  },
+  {
+    "id": "kubernetes-basics",
+    "category": "DevOps",
+    "prompt": "Explain the basic concepts of Kubernetes"
+  },
+  {
+    "id": "oauth2-flow",
+    "category": "Explanation",
+    "prompt": "Explain the OAuth2 authentication flow"
+  },
+  {
+    "id": "css-flexbox-grid",
+    "category": "Explanation",
+    "prompt": "When should I use CSS Flexbox vs Grid?"
+  },
+  {
+    "id": "python-decorator",
+    "category": "Explanation",
+    "prompt": "Explain how Python decorators work"
+  },
+  {
+    "id": "db-index",
+    "category": "Performance",
+    "prompt": "Explain how database indexes work and when to use them"
+  },
+  {
+    "id": "jwt-session",
+    "category": "Architecture",
+    "prompt": "Compare JWT vs session-based authentication"
+  },
+  {
+    "id": "promise-all-race",
+    "category": "Explanation",
+    "prompt": "Explain the difference between Promise.all and Promise.race"
+  },
+  {
+    "id": "terraform-basics",
+    "category": "DevOps",
+    "prompt": "How do I manage AWS infrastructure with Terraform basics?"
+  },
+  {
+    "id": "event-loop",
+    "category": "Explanation",
+    "prompt": "Explain how the Node.js event loop works"
+  },
+  {
+    "id": "api-rate-limiting",
+    "category": "Implementation",
+    "prompt": "How do I implement API rate limiting?"
+  }
+]

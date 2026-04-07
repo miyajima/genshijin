@@ -19,15 +19,17 @@ from pathlib import Path
 from anthropic import Anthropic
 
 SCRIPT_DIR = Path(__file__).parent
-PROMPTS_FILE = SCRIPT_DIR / "prompts.json"
+PROMPTS_FILE_JA = SCRIPT_DIR / "prompts.json"
+PROMPTS_FILE_EN = SCRIPT_DIR / "prompts_en.json"
 SKILL_FILE = SCRIPT_DIR.parent / "skills" / "genshijin" / "SKILL.md"
 CAVEMAN_SKILL_FILE = SCRIPT_DIR / "caveman_skill.md"
 RESULTS_DIR = SCRIPT_DIR / "results"
 README_FILE = SCRIPT_DIR.parent / "README.md"
 DOCS_BENCHMARK_FILE = SCRIPT_DIR.parent / "docs" / "benchmark.json"
 
-NORMAL_SYSTEM = "あなたは親切で丁寧なソフトウェアエンジニアリングアシスタントです。日本語で回答してください。"
-CAVEMAN_SUFFIX = "\n\n日本語で回答してください。"
+NORMAL_SYSTEM_JA = "あなたは親切で丁寧なソフトウェアエンジニアリングアシスタントです。日本語で回答してください。"
+NORMAL_SYSTEM_EN = "You are a helpful and thorough software engineering assistant. Respond in English."
+CAVEMAN_SUFFIX_JA = "\n\n日本語で回答してください。"
 
 
 def load_skill(path: Path) -> str:
@@ -44,9 +46,15 @@ def run_benchmark(
     model: str,
     prompts: list[dict],
     trials: int,
+    lang: str = "ja",
 ) -> list[dict]:
     genshijin_text = load_skill(SKILL_FILE)
-    caveman_text = load_skill(CAVEMAN_SKILL_FILE) + CAVEMAN_SUFFIX
+    caveman_text = load_skill(CAVEMAN_SKILL_FILE)
+    if lang == "ja":
+        normal_system = NORMAL_SYSTEM_JA
+        caveman_text += CAVEMAN_SUFFIX_JA
+    else:
+        normal_system = NORMAL_SYSTEM_EN
     results = []
 
     for prompt_data in prompts:
@@ -72,7 +80,7 @@ def run_benchmark(
             resp_normal = client.messages.create(
                 model=model,
                 max_tokens=4096,
-                system=NORMAL_SYSTEM,
+                system=normal_system,
                 messages=[{"role": "user", "content": prompt}],
             )
             n_tokens = resp_normal.usage.output_tokens
@@ -204,27 +212,36 @@ def main():
         action="store_true",
         help="docs/benchmark.json を更新（GitHub Pages用）",
     )
+    parser.add_argument(
+        "--lang",
+        default="ja",
+        choices=["ja", "en"],
+        help="ベンチマーク言語 (デフォルト: ja)",
+    )
     args = parser.parse_args()
 
     client = Anthropic()
-    prompts = json.loads(PROMPTS_FILE.read_text(encoding="utf-8"))
+    prompts_file = PROMPTS_FILE_EN if args.lang == "en" else PROMPTS_FILE_JA
+    prompts = json.loads(prompts_file.read_text(encoding="utf-8"))
 
     print(f"モデル: {args.model}")
+    print(f"言語: {args.lang}")
     print(f"試行回数: {args.trials}")
     print(f"プロンプト数: {len(prompts)}")
     print()
 
-    results = run_benchmark(client, args.model, prompts, args.trials)
+    results = run_benchmark(client, args.model, prompts, args.trials, lang=args.lang)
     table = print_table(results)
 
     # 結果を保存
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    result_file = RESULTS_DIR / f"benchmark_{timestamp}.json"
+    result_file = RESULTS_DIR / f"benchmark_{args.lang}_{timestamp}.json"
     result_file.write_text(
         json.dumps(
             {
                 "model": args.model,
+                "lang": args.lang,
                 "trials": args.trials,
                 "timestamp": timestamp,
                 "results": results,
