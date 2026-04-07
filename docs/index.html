@@ -347,6 +347,35 @@
       color: var(--text-muted);
     }
 
+    /* Lang tabs */
+    .lang-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .lang-tab {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .lang-tab:hover {
+      border-color: var(--accent-dim);
+    }
+
+    .lang-tab.active {
+      background: var(--accent-dim);
+      color: var(--bg);
+      border-color: var(--accent-dim);
+      font-weight: 600;
+    }
+
     /* Table */
     .table-wrapper {
       overflow-x: auto;
@@ -547,61 +576,14 @@
 
     <section>
       <h2>ベンチマーク（30タスク平均）</h2>
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchBenchLang('ja')">🇯🇵 日本語</button>
+        <button class="lang-tab" onclick="switchBenchLang('en')">🇺🇸 English</button>
+      </div>
       <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>通常</th>
-              <th>caveman</th>
-              <th>genshijin🗿</th>
-              <th>削減率</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>React再レンダリング説明</td>
-              <td>1,148</td>
-              <td>396</td>
-              <td>274</td>
-              <td>76%</td>
-            </tr>
-            <tr>
-              <td>認証バグ修正</td>
-              <td>1,766</td>
-              <td>202</td>
-              <td>80</td>
-              <td>95%</td>
-            </tr>
-            <tr>
-              <td>Error Boundary実装</td>
-              <td>2,851</td>
-              <td>508</td>
-              <td>254</td>
-              <td>91%</td>
-            </tr>
-            <tr>
-              <td>Docker マルチステージ</td>
-              <td>1,547</td>
-              <td>449</td>
-              <td>180</td>
-              <td>88%</td>
-            </tr>
-            <tr>
-              <td>セキュリティレビュー</td>
-              <td>1,087</td>
-              <td>281</td>
-              <td>130</td>
-              <td>88%</td>
-            </tr>
-            <tr>
-              <td style="font-weight:600">30タスク平均</td>
-              <td>1,483</td>
-              <td>476</td>
-              <td>296</td>
-              <td>80%</td>
-            </tr>
-          </tbody>
+        <table id="bench-table">
+          <thead id="bench-thead"></thead>
+          <tbody id="bench-tbody"></tbody>
         </table>
       </div>
     </section>
@@ -690,22 +672,102 @@
     const exampleIds = ['cors-error', 'event-loop', 'auth-middleware'];
     const exPrefixes = ['ex1', 'ex2', 'ex3'];
 
-    fetch('benchmark.json')
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('json-viewer').innerHTML = syntaxHighlight(data);
+    const benchData = {};
+    let currentBenchLang = 'ja';
 
+    const benchHighlightIds = [
+      'react-rerender', 'auth-middleware', 'react-error-boundary',
+      'docker-multistage', 'security-review'
+    ];
+
+    const benchLabels = {
+      ja: {
+        task: '', normal: '通常', caveman: 'caveman', genshijin: 'genshijin🗿', saved: '削減率', avg: '30タスク平均',
+        names: {
+          'react-rerender': 'React再レンダリング説明',
+          'auth-middleware': '認証バグ修正',
+          'react-error-boundary': 'Error Boundary実装',
+          'docker-multistage': 'Docker マルチステージ',
+          'security-review': 'セキュリティレビュー',
+        }
+      },
+      en: {
+        task: '', normal: 'Normal', caveman: 'caveman', genshijin: 'genshijin🗿', saved: 'Saved', avg: '30 tasks avg',
+        names: {
+          'react-rerender': 'React re-render',
+          'auth-middleware': 'Auth bug fix',
+          'react-error-boundary': 'Error Boundary',
+          'docker-multistage': 'Docker multi-stage',
+          'security-review': 'Security review',
+        }
+      }
+    };
+
+    function renderBenchTable(lang) {
+      const data = benchData[lang];
+      const labels = benchLabels[lang];
+      const thead = document.getElementById('bench-thead');
+      const tbody = document.getElementById('bench-tbody');
+
+      if (!data) {
+        thead.innerHTML = '';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">ベンチマーク未実行</td></tr>';
+        return;
+      }
+
+      thead.innerHTML = '<tr><th>' + labels.task + '</th><th>' + labels.normal + '</th><th>' + labels.caveman + '</th><th>' + labels.genshijin + '</th><th>' + labels.saved + '</th></tr>';
+
+      let rows = '';
+      const highlights = data.results.filter(r => benchHighlightIds.includes(r.id));
+      highlights.forEach(item => {
+        const name = labels.names[item.id] || item.id;
+        rows += '<tr><td>' + escapeHtml(name) + '</td><td>' + item.median_normal.toLocaleString() + '</td><td>' + item.median_caveman.toLocaleString() + '</td><td>' + item.median_genshijin.toLocaleString() + '</td><td>' + item.saved_genshijin_pct + '%</td></tr>';
+      });
+
+      // Average
+      const totalNormal = data.results.reduce((s, r) => s + r.median_normal, 0);
+      const totalGenshijin = data.results.reduce((s, r) => s + r.median_genshijin, 0);
+      const totalCaveman = data.results.reduce((s, r) => s + r.median_caveman, 0);
+      const avgNormal = Math.round(totalNormal / data.results.length);
+      const avgCaveman = Math.round(totalCaveman / data.results.length);
+      const avgGenshijin = Math.round(totalGenshijin / data.results.length);
+      const avgSaved = Math.round((1 - totalGenshijin / totalNormal) * 100);
+      rows += '<tr><td style="font-weight:600">' + labels.avg + '</td><td>' + avgNormal.toLocaleString() + '</td><td>' + avgCaveman.toLocaleString() + '</td><td>' + avgGenshijin.toLocaleString() + '</td><td>' + avgSaved + '%</td></tr>';
+
+      tbody.innerHTML = rows;
+    }
+
+    function switchBenchLang(lang) {
+      currentBenchLang = lang;
+      document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.lang-tab[onclick*="' + lang + '"]').classList.add('active');
+      renderBenchTable(lang);
+    }
+
+    // Load both benchmark JSONs
+    Promise.all([
+      fetch('benchmark.json').then(r => r.json()).catch(() => null),
+      fetch('benchmark_en.json').then(r => r.json()).catch(() => null),
+    ]).then(([ja, en]) => {
+      if (ja) benchData.ja = ja;
+      if (en) benchData.en = en;
+
+      renderBenchTable('ja');
+
+      // JSON viewer (show current lang)
+      document.getElementById('json-viewer').innerHTML = syntaxHighlight(ja || en || {});
+
+      // Examples (from ja data)
+      if (ja) {
         exampleIds.forEach((id, i) => {
-          const item = data.results.find(r => r.id === id);
+          const item = ja.results.find(r => r.id === id);
           if (!item) return;
           renderExample(exPrefixes[i] + '-normal', '通常', item.median_normal, item.normal_texts[1]);
           renderExample(exPrefixes[i] + '-caveman', 'caveman', item.median_caveman, item.caveman_texts[1]);
           renderExample(exPrefixes[i] + '-genshijin', 'genshijin', item.median_genshijin, item.genshijin_texts[1]);
         });
-      })
-      .catch(() => {
-        document.getElementById('json-viewer').textContent = 'Failed to load benchmark data.';
-      });
+      }
+    });
   </script>
 </body>
 </html>
