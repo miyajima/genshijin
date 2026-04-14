@@ -42,7 +42,7 @@ def load_skill(path: Path) -> str:
     return text
 
 
-API_CALL_INTERVAL = 3  # リクエスト間の待機秒数
+API_CALL_INTERVAL = 3  # リクエスト間の待機秒数（デフォルト）
 MAX_RETRIES = 5
 
 
@@ -64,6 +64,10 @@ def run_benchmark(
     prompts: list[dict],
     trials: int,
     lang: str = "ja",
+    metric: str = "output",
+    thinking_budget: int | None = None,
+    normal_system_append: str | None = None,
+    api_call_interval: int = API_CALL_INTERVAL,
 ) -> list[dict]:
     genshijin_text = load_skill(SKILL_FILE)
     caveman_text = load_skill(CAVEMAN_SKILL_FILE)
@@ -72,6 +76,8 @@ def run_benchmark(
         caveman_text += CAVEMAN_SUFFIX_JA
     else:
         normal_system = NORMAL_SYSTEM_EN
+    if normal_system_append:
+        normal_system = f"{normal_system}\n\n{normal_system_append}".strip()
     results = []
 
     for prompt_data in prompts:
@@ -82,6 +88,9 @@ def run_benchmark(
         normal_tokens = []
         caveman_tokens = []
         genshijin_tokens = []
+        normal_usage = []
+        caveman_usage = []
+        genshijin_usage = []
         normal_texts = []
         caveman_texts = []
         genshijin_texts = []
@@ -93,6 +102,28 @@ def run_benchmark(
                 flush=True,
             )
 
+            def extract_usage(resp) -> dict:
+                usage = resp.usage
+                # anthropic SDK: usage.input_tokens / usage.output_tokens
+                input_tokens = getattr(usage, "input_tokens", 0) or 0
+                output_tokens = getattr(usage, "output_tokens", 0) or 0
+                total_tokens = input_tokens + output_tokens
+                return {
+                    "input_tokens": int(input_tokens),
+                    "output_tokens": int(output_tokens),
+                    "total_tokens": int(total_tokens),
+                }
+
+            def pick_metric(usage_dict: dict) -> int:
+                if metric == "total":
+                    return usage_dict["total_tokens"]
+                return usage_dict["output_tokens"]
+
+            extra_kwargs = {}
+            if thinking_budget is not None:
+                # NOTE: When supported by the model/runtime, thinking tokens are included in usage.
+                extra_kwargs["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+
             # 通常応答
             resp_normal = api_call_with_retry(
                 client,
@@ -100,12 +131,15 @@ def run_benchmark(
                 max_tokens=4096,
                 system=normal_system,
                 messages=[{"role": "user", "content": prompt}],
+                **extra_kwargs,
             )
-            n_tokens = resp_normal.usage.output_tokens
+            n_usage = extract_usage(resp_normal)
+            n_tokens = pick_metric(n_usage)
             normal_tokens.append(n_tokens)
+            normal_usage.append(n_usage)
             normal_texts.append(resp_normal.content[0].text)
 
-            time.sleep(API_CALL_INTERVAL)
+            time.sleep(api_call_interval)
 
             # caveman応答
             resp_caveman = api_call_with_retry(
@@ -114,12 +148,15 @@ def run_benchmark(
                 max_tokens=4096,
                 system=caveman_text,
                 messages=[{"role": "user", "content": prompt}],
+                **extra_kwargs,
             )
-            cv_tokens = resp_caveman.usage.output_tokens
+            cv_usage = extract_usage(resp_caveman)
+            cv_tokens = pick_metric(cv_usage)
             caveman_tokens.append(cv_tokens)
+            caveman_usage.append(cv_usage)
             caveman_texts.append(resp_caveman.content[0].text)
 
-            time.sleep(API_CALL_INTERVAL)
+            time.sleep(api_call_interval)
 
             # genshijin応答
             resp_genshijin = api_call_with_retry(
@@ -128,9 +165,12 @@ def run_benchmark(
                 max_tokens=4096,
                 system=genshijin_text,
                 messages=[{"role": "user", "content": prompt}],
+                **extra_kwargs,
             )
-            g_tokens = resp_genshijin.usage.output_tokens
+            g_usage = extract_usage(resp_genshijin)
+            g_tokens = pick_metric(g_usage)
             genshijin_tokens.append(g_tokens)
+            genshijin_usage.append(g_usage)
             genshijin_texts.append(resp_genshijin.content[0].text)
 
             print(f"通常={n_tokens} caveman={cv_tokens} genshijin={g_tokens}")
@@ -151,6 +191,9 @@ def run_benchmark(
                 "normal_tokens": normal_tokens,
                 "caveman_tokens": caveman_tokens,
                 "genshijin_tokens": genshijin_tokens,
+                "normal_usage": normal_usage,
+                "caveman_usage": caveman_usage,
+                "genshijin_usage": genshijin_usage,
                 "normal_texts": normal_texts,
                 "caveman_texts": caveman_texts,
                 "genshijin_texts": genshijin_texts,
@@ -251,6 +294,40 @@ def main():
         help="docs/benchmark.json を更新（GitHub Pages用）",
     )
     parser.add_argument(
+        "--metric",
+        default="output",
+        choices=["output", "total"],
+        help="集計トークン: output=出力のみ / total=入力+出力 (デフォルト: output)",
+    )
+    parser.add_argument(
+        "--thinking-budget",
+        type=int,
+        default=None,
+        help="可能なら thinking を有効化（budget tokens）。usage ベースで計測対象に含まれる。",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="先頭N件だけ実行（コスト削減用）。未指定なら全件。",
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=API_CALL_INTERVAL,
+        help="API呼び出し間隔（秒）。Rate limit 回避用 (デフォルト: 3)",
+    )
+    parser.add_argument(
+        "--normal-system-append",
+        default=None,
+        help="通常応答の system に追記する文字列（共通ハーネス組み込み再現用）。",
+    )
+    parser.add_argument(
+        "--normal-system-append-file",
+        default=None,
+        help="通常応答の system に追記するファイルパス（共通ハーネス組み込み再現用）。",
+    )
+    parser.add_argument(
         "--lang",
         default="ja",
         choices=["ja", "en"],
@@ -266,9 +343,29 @@ def main():
     print(f"言語: {args.lang}")
     print(f"試行回数: {args.trials}")
     print(f"プロンプト数: {len(prompts)}")
+    print(f"集計: {args.metric}")
+    if args.thinking_budget is not None:
+        print(f"thinking: enabled budget={args.thinking_budget}")
     print()
 
-    results = run_benchmark(client, args.model, prompts, args.trials, lang=args.lang)
+    if args.limit is not None:
+        prompts = prompts[: args.limit]
+
+    normal_system_append = args.normal_system_append
+    if args.normal_system_append_file:
+        normal_system_append = Path(args.normal_system_append_file).read_text(encoding="utf-8")
+
+    results = run_benchmark(
+        client,
+        args.model,
+        prompts,
+        args.trials,
+        lang=args.lang,
+        metric=args.metric,
+        thinking_budget=args.thinking_budget,
+        normal_system_append=normal_system_append,
+        api_call_interval=args.interval,
+    )
     table = print_table(results, lang=args.lang)
 
     # 結果を保存

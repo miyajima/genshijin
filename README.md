@@ -2,9 +2,22 @@
 
 > なぜ多くトークン使う？少なくて済む🗿
 
-Claude Code / Codex 向けの超圧縮コミュニケーションスキル。[caveman](https://github.com/JuliusBrussee/caveman) の日本語版をベースに、日本語特有の冗長表現に最適化。
+AI コーディングエージェント向けの超圧縮コミュニケーションスキル（Claude Code / Codex / Cursor / Hermes Agent / Antigravity / GitHub Copilot Chat 等）。[caveman](https://github.com/JuliusBrussee/caveman) の日本語版をベースに、日本語特有の冗長表現に最適化。
 
 トークン使用量を **約75%削減** しつつ、技術的正確性は100%維持。
+
+## 共通ハーネスへ取り込み（推奨）
+
+このリポジトリは **中立**（特定ツールの設定ファイルや個人環境の絶対パスに依存しない）に保ち、導入先（あなたの共通ハーネス）へ「モジュール」を取り込む設計。
+
+- **必須（出力規律）**: `harness-modules/genshijin-output-discipline.md`
+- **任意（圧縮ルール本体）**: `skills/genshijin/SKILL.md` の「ルール」章（強度レベル含む）
+
+取り込み後は、**途中経過/更新/下書き/最終報告**を含む「ユーザー可視の全出力」に圧縮を適用。
+
+例外: **コミット/PR本文**、**ユーザー向けドキュメント成果物（README/設計ドキュメント等）**。
+
+コード/ログ/エラー文は原文維持。
 
 ## 日本語への最適化ポイント
 
@@ -69,6 +82,10 @@ claude --plugin-dir ./path/to/genshijin
 ```
 
 会話中に `原始人やめて` または `通常モード` で解除。
+
+## 完了前チェック（運用）
+- 途中経過を含むユーザー可視出力で、**重複/言い換え/中間要約**をしていない
+- 例外領域（コミット/PR本文、ユーザー向けドキュメント成果物）では、読みやすさ優先（ただし冗長は避ける）
 
 ## 3段階の強度
 
@@ -136,6 +153,27 @@ claude --plugin-dir ./path/to/genshijin
 | APIのレート制限を実装する方法を教えて | 1819 | 805 | 616 | 56% | 66% | 23% |
 | **平均** | **1453** | **482** | **292** | **67%** | **80%** | **39%** |
 <!-- BENCHMARK_END -->
+
+### 計測対象（思考中トークン含むか？）
+
+- この表の数値: **Anthropic API の `usage.output_tokens` の中央値**
+- “思考中トークン” は、**API が usage として返す範囲**のみ計測可能
+  - ユーザーに見えない内部思考（非公開）は取得できない
+  - もし thinking を有効化して usage に含まれる場合は **output/total に反映**
+
+実行例:
+
+```bash
+cd benchmarks
+pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# 出力トークンのみ（従来）
+python run.py --trials 3 --update-readme
+
+# thinking 有効化 + 入力+出力（thinking が usage に入る場合は total に含まれる）
+python run.py --trials 3 --metric total --thinking-budget 2000 --update-readme
+```
 
 ### English Benchmark (参考値)
 
