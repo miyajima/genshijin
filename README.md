@@ -175,6 +175,69 @@ python run.py --trials 3 --update-readme
 python run.py --trials 3 --metric total --thinking-budget 2000 --update-readme
 ```
 
+### OpenAI（Responses）で reasoning も検証した結果
+
+結論: **reasoning_tokens 削減は小さい（ほぼ変わらない）**。主効果は **output_tokens（可視出力）削減**。
+
+条件:
+- モデル: `gpt-5.4`
+- API: Responses
+- `reasoning_effort`: `medium`
+- プロンプト: `benchmarks/prompts.json`（30問）
+- after: `harness-modules/genshijin-output-discipline.md`（`compress`で要点抽出してsystem追記）
+
+結果（中央値の平均）:
+
+| 指標 | before | after | 削減 |
+|---|---:|---:|---:|
+| output_tokens | 1172.3 | 788.0 | 33% |
+| reasoning_tokens | 142.0 | 137.6 | 3% |
+| total_tokens | 1209.0 | 1176.7 | 3% |
+
+参考: `benchmarks/results/openai_benchmark_merged_gpt54_medium_30_20260415_025206.json`
+
+### Cursor Auto Proxy Benchmark（Usage画面なし代替）
+
+Cursor Auto は API の `usage.tokens` を直接取れないことが多い。代替として **可視出力の量（代理指標）** を導入前後で比較する。
+
+計測できるもの:
+- 応答テキスト量（文字数/行数/コードブロック行数/箇条書き数/見出し数）
+- 任意で応答時間（秒）と品質OK/NG
+
+計測できないもの:
+- **内部思考トークン（非公開）**
+- Cursor側が表示しないトークンusage/cost
+
+#### 手順（コピペ保存 → 集計）
+
+1) ベースライン（導入前）と導入後で、同じ順序で `benchmarks/prompts.json` の `prompt` を Cursor に投げる  
+2) 各応答を `baseline.txt` / `discipline.txt` にコピペ保存（下のフォーマット）  
+3) 集計:
+
+```bash
+python benchmarks/cursor_proxy_analyze.py \
+  --baseline baseline.txt \
+  --discipline discipline.txt \
+  --prompts benchmarks/prompts.json
+```
+
+#### 保存フォーマット（最小）
+
+```text
+=== react-rerender ===
+TIME_SEC: 12
+QUALITY: OK
+<ここにCursorのアシスタント出力をそのまま貼る>
+
+=== auth-middleware ===
+TIME_SEC: 20
+QUALITY: NG
+<...>
+```
+
+- `=== <id> ===` は必須（`benchmarks/prompts.json` の `id` と一致）
+- `TIME_SEC:` と `QUALITY:` は任意（無い場合は未計測として扱う）
+
 ### English Benchmark (参考値)
 
 genshijin は日本語最適化スキルだが、英語プロンプトでも圧縮効果を発揮するか検証。caveman（英語ネイティブ）との比較。
